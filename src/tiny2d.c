@@ -139,6 +139,10 @@ int main(int argc, char **argv) {
     // 3. Raylib
     // ============================================================
     InitWindow(TINY2D_WINDOW_WIDTH, TINY2D_WINDOW_HEIGHT, TINY2D_TITLE);
+
+    // Скрываем системный курсор
+    HideCursor();
+    
     SetTargetFPS(TINY2D_FPS);
 
     target = LoadRenderTexture(TINY2D_WIDTH, TINY2D_HEIGHT);
