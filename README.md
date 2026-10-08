@@ -312,7 +312,7 @@ end
 
 - [raylib](https://raylib.com) — zlib license
 - [Lua 5.4.9](https://lua.org) — MIT license
-- GB Chocolate palette by [WildLeoKnight](https://lospec.com/palette-list/gb-chocolate)
+- GB Chocolate palette by [GrafxKid](https://lospec.com/palette-list/gb-chocolate)
 
 ---
 
