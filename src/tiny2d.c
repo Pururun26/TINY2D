@@ -85,9 +85,20 @@ static void reload_game(const char *game_path) {
     tiny2d_audio_close();
     tiny2d_audio_init();
 
+    tiny2d_time_reset();
+
     // 5. Создать новый Lua
     L = luaL_newstate();
-    luaL_openlibs(L);
+
+    // Открываем только безопасные библиотеки
+    luaL_requiref(L, "_G",        luaopen_base,      1); lua_pop(L, 1);
+    luaL_requiref(L, "math",      luaopen_math,      1); lua_pop(L, 1);
+    luaL_requiref(L, "string",    luaopen_string,    1); lua_pop(L, 1);
+    luaL_requiref(L, "table",     luaopen_table,     1); lua_pop(L, 1);
+    luaL_requiref(L, "coroutine", luaopen_coroutine, 1); lua_pop(L, 1);
+    luaL_requiref(L, "utf8",      luaopen_utf8,      1); lua_pop(L, 1);
+    luaL_requiref(L, "package",   luaopen_package,   1); lua_pop(L, 1);
+    // НЕ открываем: io, os, debug
     tiny2d_register_api(L);
     setup_lua_path(L, game_path);
 
@@ -97,6 +108,7 @@ static void reload_game(const char *game_path) {
         L = NULL;
         // Игра не запущена, но окно живо — можно править и жать Ctrl+R снова
     } else {
+        call_lua("init");
         tiny2d_log("TINY2D: Reloaded.");
     }
 }

@@ -145,6 +145,28 @@ static int l_btnp(lua_State *L) {
     return 1;
 }
 
+// -- Мышка --
+static void push_mouse_table(lua_State *L, tiny2d_mouse m) {
+    lua_newtable(L);
+    lua_pushinteger(L, m.x);        lua_setfield(L, -2, "x");
+    lua_pushinteger(L, m.y);        lua_setfield(L, -2, "y");
+    lua_pushboolean(L, m.left);     lua_setfield(L, -2, "left");
+    lua_pushboolean(L, m.middle);   lua_setfield(L, -2, "middle");
+    lua_pushboolean(L, m.right);    lua_setfield(L, -2, "right");
+    lua_pushinteger(L, m.scrollx);  lua_setfield(L, -2, "scrollx");
+    lua_pushinteger(L, m.scrolly);  lua_setfield(L, -2, "scrolly");
+}
+
+static int l_mouse(lua_State *L) {
+    push_mouse_table(L, mouse());
+    return 1;
+}
+
+static int l_mousep(lua_State *L) {
+    push_mouse_table(L, mousep());
+    return 1;
+}
+
 // Спрайты
 static int l_spr(lua_State *L) {
     int n = (int)luaL_checkinteger(L, 1);
@@ -210,6 +232,17 @@ static int l_load(lua_State *L) {
     return 1;
 }
 
+// Время
+static int l_utime(lua_State *L) {
+    lua_pushinteger(L, (lua_Integer)tiny2d_utime());
+    return 1;
+}
+
+static int l_time(lua_State *L) {
+    lua_pushnumber(L, tiny2d_time());
+    return 1;
+}
+
 // ============================================================
 // Регистрация всех биндингов
 // ============================================================
@@ -229,9 +262,13 @@ void tiny2d_register_api(lua_State *Lstate) {
     lua_register(Lstate, "pset",  l_pset);
     lua_register(Lstate, "btn",   l_btn);
     lua_register(Lstate, "btnp",  l_btnp);
+    lua_register(Lstate, "mouse",  l_mouse);
+    lua_register(Lstate, "mousep", l_mousep);
     lua_register(Lstate, "spr",   l_spr);
     lua_register(Lstate, "sfx",   l_sfx);
     lua_register(Lstate, "music", l_music);
     lua_register(Lstate, "save",  l_save);
     lua_register(Lstate, "load",  l_load);
+    lua_register(Lstate, "utime", l_utime);
+    lua_register(Lstate, "time", l_time);
 }

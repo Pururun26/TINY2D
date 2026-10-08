@@ -1,3 +1,4 @@
+#include <time.h>
 #include "raylib.h"
 #include "tiny2d_api.h"
 #include "tiny2d_conf.h"
@@ -164,4 +165,77 @@ bool btnp(uint8_t id)
         case 5: return IsKeyPressed(KEY_K) || IsKeyPressed(KEY_X);
         default: return false;
     }
+}
+
+// Мышь — перевод экранных координат в виртуальные
+static tiny2d_mouse get_mouse_state(bool pressed) {
+    tiny2d_mouse m = {0};
+
+    // Экранные координаты
+    Vector2 pos = GetMousePosition();
+
+    // Масштаб и offset (как в главном цикле)
+    int screenW = GetScreenWidth();
+    int screenH = GetScreenHeight();
+
+    float scaleX = (float)screenW / TINY2D_WIDTH;
+    float scaleY = (float)screenH / TINY2D_HEIGHT;
+    float scale  = (scaleX < scaleY) ? scaleX : scaleY;
+
+    int offsetX = (int)((screenW - TINY2D_WIDTH  * scale) / 2);
+    int offsetY = (int)((screenH - TINY2D_HEIGHT * scale) / 2);
+
+    // Перевод в виртуальные координаты
+    m.x = (int16_t)((pos.x - offsetX) / scale);
+    m.y = (int16_t)((pos.y - offsetY) / scale);
+
+    // Кнопки: down или pressed
+    if (pressed) {
+        m.left   = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+        m.middle = IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE);
+        m.right  = IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
+    } else {
+        m.left   = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+        m.middle = IsMouseButtonDown(MOUSE_BUTTON_MIDDLE);
+        m.right  = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
+    }
+
+    // Прокрутка с клампом в int8_t
+    Vector2 w = GetMouseWheelMoveV();
+    float wx = w.x;
+    float wy = w.y;
+
+    if (wx >  32) wx =  32;
+    if (wx < -32) wx = -32;
+    if (wy >  32) wy =  32;
+    if (wy < -32) wy = -32;
+
+    m.scrollx = (int8_t)wx;
+    m.scrolly = (int8_t)wy;
+
+    return m;
+}
+
+tiny2d_mouse mouse(void) {
+    return get_mouse_state(false);
+}
+
+tiny2d_mouse mousep(void) {
+    return get_mouse_state(true);
+}
+
+// --- API для время ---
+int64_t tiny2d_utime(void) {
+    return (int64_t)time(NULL);
+}
+
+
+static double tiny2d_start_time = 0.0;
+
+void tiny2d_time_reset(void) {
+    tiny2d_start_time = GetTime();
+}
+
+double tiny2d_time(void) {
+    return (GetTime() - tiny2d_start_time) * 1000.0; // миллисекунды с запуска
 }

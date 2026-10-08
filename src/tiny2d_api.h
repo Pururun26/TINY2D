@@ -34,3 +34,23 @@ void pset(int16_t x, int16_t y, uint8_t color);
 // --- API для ввода ---
 bool btn(uint8_t id);
 bool btnp(uint8_t id);
+
+// --- API для мыши
+typedef struct {
+    int16_t x;         // координаты указателя в виртуальном экране (0..159)
+    int16_t y;
+    bool    left;      // нажата ли кнопка сейчас
+    bool    middle;
+    bool    right;
+    int8_t  scrollx;   // прокрутка за кадр (-31..32)
+    int8_t  scrolly;
+} tiny2d_mouse;
+
+tiny2d_mouse mouse(void);    // кнопки: held
+tiny2d_mouse mousep(void);   // кнопки: pressed this frame
+
+// --- API для время ---
+int64_t tiny2d_utime(void);
+
+void   tiny2d_time_reset(void);
+double tiny2d_time(void);
