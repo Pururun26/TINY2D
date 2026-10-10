@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
         // Музыка стримится каждый кадр
         music_update();
 
-        if (IsKeyPressed(KEY_F11)) ToggleBorderlessWindowed();
+        if (IsKeyPressed(KEY_F11)) ToggleFullscreen();
 
         autosave_counter++;
         if (autosave_counter >= AUTOSAVE_INTERVAL) {
