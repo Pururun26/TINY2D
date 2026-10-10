@@ -162,7 +162,6 @@ ellib(x, y, a, b, color)            -- ellipse border
 rect(x, y, w, h, color)             -- filled rectangle
 rectb(x, y, w, h, color)            -- rectangle border
 line(x0, y0, x1, y1, color)         -- line
-pset(x, y, color)                   -- pixel
 ```
 
 ### Sprites

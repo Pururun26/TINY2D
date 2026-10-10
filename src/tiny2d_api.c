@@ -133,11 +133,6 @@ void line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
     DrawLine(x0, y0, x1, y1, tiny2d_get_palette(color));
 }
 
-// Рисует пиксель в (x, y)
-void pset(int16_t x, int16_t y, uint8_t color) {
-    DrawPixel(x, y, tiny2d_get_palette(color));
-}
-
 // --- API для ввода ---
 bool btn(uint8_t id)
 {

@@ -124,14 +124,6 @@ static int l_line(lua_State *L) {
     return 0;
 }
 
-static int l_pset(lua_State *L) {
-    int x = (int)luaL_checkinteger(L, 1);
-    int y = (int)luaL_checkinteger(L, 2);
-    int c = (int)luaL_checkinteger(L, 3);
-    pset((int16_t)x, (int16_t)y, (uint8_t)c);
-    return 0;
-}
-
 // -- Кнопки --
 static int l_btn(lua_State *L) {
     int key = luaL_checkinteger(L, 1);
@@ -259,7 +251,6 @@ void tiny2d_register_api(lua_State *Lstate) {
     lua_register(Lstate, "elli",  l_elli);
     lua_register(Lstate, "ellib", l_ellib);
     lua_register(Lstate, "line",  l_line);
-    lua_register(Lstate, "pset",  l_pset);
     lua_register(Lstate, "btn",   l_btn);
     lua_register(Lstate, "btnp",  l_btnp);
     lua_register(Lstate, "mouse",  l_mouse);

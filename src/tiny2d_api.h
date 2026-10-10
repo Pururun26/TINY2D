@@ -29,7 +29,6 @@ void rectb(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color);
 void elli (int16_t x, int16_t y, int16_t a, int16_t b, uint8_t color);
 void ellib(int16_t x, int16_t y, int16_t a, int16_t b, uint8_t color);
 void line(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
-void pset(int16_t x, int16_t y, uint8_t color);
 
 // --- API для ввода ---
 bool btn(uint8_t id);
