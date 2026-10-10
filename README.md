@@ -299,15 +299,6 @@ load(pos)          -- read value from slot pos
 
 ---
 
-## Known differences from PICO-8 / TIC-80
-
-- `pget()` — not implemented. Use coordinates or AABB collisions instead.
-- `pset()` — not implemented. Use `spr` with a small sprite, or `rect(x, y, 1, 1, color)` for single pixels.
-- `rect(x, y, w, h)` — size-based, unlike PICO-8's `rect(x0, y0, x1, y1)`.
-- No `map()` / `mget()` / `mset()` — draw tiles directly with `spr`.
-
----
-
 ## Example
 
 `data/scripts/main.lua`:
