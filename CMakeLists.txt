@@ -9,11 +9,21 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # ============================================================
-# Пути к raylib
+# raylib — выбираем по платформе
 # ============================================================
-set(RAYLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/raylib/include")
-set(RAYLIB_LIB_DIR     "${CMAKE_SOURCE_DIR}/raylib/lib")
-set(RAYLIB_WEB_DIR     "${CMAKE_SOURCE_DIR}/raylib-6.0_webassembly")
+if(EMSCRIPTEN)
+    set(RAYLIB_DIR "${CMAKE_SOURCE_DIR}/raylib-6.0_webassembly")
+elseif(WIN32)
+    set(RAYLIB_DIR "${CMAKE_SOURCE_DIR}/raylib-6.0_win64_mingw-w64")
+elseif(APPLE)
+    set(RAYLIB_DIR "${CMAKE_SOURCE_DIR}/raylib-6.0_macos")
+else()
+    # Linux
+    set(RAYLIB_DIR "${CMAKE_SOURCE_DIR}/raylib-6.0_linux_amd64")
+endif()
+
+set(RAYLIB_INCLUDE_DIR "${RAYLIB_DIR}/include")
+set(RAYLIB_LIB_DIR     "${RAYLIB_DIR}/lib")
 
 # ============================================================
 # Lua 5.4.9 — общий для всех платформ
@@ -88,11 +98,11 @@ target_include_directories(tiny2d PRIVATE
 if(EMSCRIPTEN)
 
     target_include_directories(tiny2d PRIVATE
-        "${RAYLIB_WEB_DIR}/include"
+        "${RAYLIB_INCLUDE_DIR}"
     )
 
     target_link_directories(tiny2d PRIVATE
-        "${RAYLIB_WEB_DIR}/lib"
+        "${RAYLIB_LIB_DIR}"
     )
 
     # raylib для web называется libraylib.web.a
