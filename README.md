@@ -10,7 +10,7 @@ A tiny retro game engine for Lua. Built for making small 2D games fast.
 - Save system — 64 slots × 8 bytes
 - Lua scripting with `require`
 - Single ~1 MB executable, no external DLLs
-- Web build via Emscripten
+- Windows, Linux, and Web builds
 
 ---
 
@@ -23,22 +23,44 @@ Default font: `data/sprites/font.png` — a 128×128 sheet with 3×5 glyphs
 
 ## Building
 
-Requirements:
-- CMake 3.15+
-- MinGW-w64 (Windows) / GCC (Linux) / Clang (macOS)
+### Requirements
+
+- **CMake 3.15+**
+- **Compiler:** MinGW-w64 (Windows) / GCC (Linux) / Clang (macOS)
+- **raylib 6.0** — download from [raylib releases](https://github.com/raysan5/raylib/releases)
+
+### raylib folders
+
+Place the matching raylib release in the project root:
+
+| Platform | Folder | Archive |
+|---|---|---|
+| **Windows** | `raylib-6.0_win64_mingw-w64/` | `raylib-6.0_win64_mingw-w64.zip` |
+| **Linux** | `raylib-6.0_linux_amd64/` | `raylib-6.0_linux_amd64.tar.gz` |
+| **macOS** | `raylib-6.0_macos/` | `raylib-6.0_macos.tar.gz` |
+| **Web** | `raylib-6.0_webassembly/` | `raylib-6.0_webassembly.zip` |
+
+The Windows version is included in this repository.
+Others must be downloaded separately.
+
+### Desktop build (Windows / Linux / macOS)
 
 ```bash
 cmake -B build
 cmake --build build
 ```
 
-The executable will be at `build/tiny2d.exe`.
+Output:
 
-### Web build
+- **Windows:** `build/tiny2d.exe`
+- **Linux / macOS:** `build/tiny2d`
+
+### Web build (Emscripten)
 
 Requires [Emscripten SDK](https://emscripten.org).
 
 ```bash
+source /path/to/emsdk/emsdk_env.sh
 emcmake cmake -B build-web
 cmake --build build-web
 ```
@@ -59,7 +81,7 @@ Open `http://localhost:8000/tiny2d.html`.
 
 ## Running
 
-`tiny2d.exe` expects a `data/` folder **next to it**. If `data/` is missing, the engine has nothing to run.
+`tiny2d` expects a `data/` folder **next to it**. If `data/` is missing, the engine has nothing to run.
 
 To start, download the release `.zip` (which includes `data/`) or create your own `data/` folder — see the structure below.
 
@@ -274,6 +296,15 @@ load(pos)          -- read value from slot pos
 
 - On desktop: auto-saved to `save/storage.bin` on window close and every 10 minutes.
 - On web: saved to browser `localStorage` immediately on every `save()`.
+
+---
+
+## Known differences from PICO-8 / TIC-80
+
+- `pget()` — not implemented. Use coordinates or AABB collisions instead.
+- `pset()` — not implemented. Use `spr` with a small sprite, or `rect(x, y, 1, 1, color)` for single pixels.
+- `rect(x, y, w, h)` — size-based, unlike PICO-8's `rect(x0, y0, x1, y1)`.
+- No `map()` / `mget()` / `mset()` — draw tiles directly with `spr`.
 
 ---
 
