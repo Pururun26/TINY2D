@@ -1,0 +1,5 @@
+/home/pururun/dev/TINY2D/build-linux/CMakeFiles/lua.dir
+/home/pururun/dev/TINY2D/build-linux/CMakeFiles/tiny2d.dir
+/home/pururun/dev/TINY2D/build-linux/CMakeFiles/run.dir
+/home/pururun/dev/TINY2D/build-linux/CMakeFiles/edit_cache.dir
+/home/pururun/dev/TINY2D/build-linux/CMakeFiles/rebuild_cache.dir

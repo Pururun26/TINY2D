@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/pururun/dev/TINY2D/build-linux/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
