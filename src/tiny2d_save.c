@@ -57,7 +57,7 @@ static int64_t storage_data[TINY2D_SAVE_SLOTS];
 static bool    storage_loaded = false;
 
 #ifndef __EMSCRIPTEN__
-static char save_path[1024];
+static char save_path[1088];
 #endif
 
 // ============================================================

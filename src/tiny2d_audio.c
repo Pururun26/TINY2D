@@ -62,6 +62,8 @@ void tiny2d_audio_init(void) {
 }
 
 void tiny2d_audio_close(void) {
+    if (!IsAudioDeviceReady()) return;
+    
     for (int i = 0; i < TINY2D_MAX_SFX; i++) {
         if (sfx_used[i]) UnloadSound(sfx_slots[i]);
     }

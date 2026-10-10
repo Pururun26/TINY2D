@@ -24,7 +24,6 @@ static bool   palette_dirty  = true;      // нужно ли обновить un
 // ============================================================
 
 static const char *PALETTE_FS =
-    "precision mediump float;\n"
     "varying vec2 fragTexCoord;\n"
     "varying vec4 fragColor;\n"
     "uniform sampler2D texture0;\n"
