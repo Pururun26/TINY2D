@@ -6,11 +6,13 @@ A tiny retro game engine for Lua. Built for making small 2D games fast.
 - 4-color palette (GB Chocolate) with runtime palette swapping
 - Sprites from indexed PNG, transparency via magenta `#FF00FF`
 - Sound and music loaded from files
+- Tone synthesis — 4 channels (WASM-4 style)
 - Mouse and keyboard input
 - Save system — 64 slots × 8 bytes
+- Cartridges — single `.tiny` file (ZIP with `data/` inside)
 - Lua scripting with `require`
 - Single ~1 MB executable, no external DLLs
-- Windows, Linux, and Web builds
+- Windows, Linux, macOS and Web builds
 
 ---
 
@@ -67,8 +69,7 @@ cmake --build build-web
 
 Output: `build-web/tiny2d.html`, `.js`, `.wasm`.
 
-To run, place a `data.zip` (your `data/` folder zipped) next to `tiny2d.html`,
-then serve over HTTP:
+Then place `tiny2d.json` and your cart next to `tiny2d.html`, and serve over HTTP:
 
 ```bash
 cd build-web
@@ -79,11 +80,80 @@ Open `http://localhost:8000/tiny2d.html`.
 
 ---
 
+## Cartridges
+
+A cartridge is a single `.tiny` file — a ZIP archive containing a `data/` folder:
+
+```
+game.tiny
+└── data/
+    ├── scripts/
+    ├── sprites/
+    ├── sounds/
+    └── music/
+```
+
+### How the engine finds the game
+
+When you run `tiny2d` without arguments, it searches in this order:
+
+1. **`game.tiny`** next to the executable → extract to `_cart/`, run from there.
+2. **`data/`** next to the executable → run in dev mode (no extraction).
+3. **Nothing found** → engine exits with an error in the log.
+
+You can also pass a cart explicitly:
+
+```bash
+tiny2d.exe mygame.tiny
+tiny2d.exe other.tiny
+```
+
+This lets you ship one `tiny2d.exe` with multiple carts.
+
+### Dev mode vs Cart mode
+
+- **Dev mode** — run with a bare `data/` folder next to the exe. Edit `data/scripts/main.lua`, press **Ctrl+R** to reload. No repacking needed.
+- **Cart mode** — run with a `.tiny` file. The engine extracts it to `_cart/`, runs, and cleans up on exit.
+
+### Packing a cart
+
+On Windows: right-click `src/data/` → *Send to → Compressed (zipped) folder*, rename to `game.tiny`.
+
+On Linux/macOS:
+
+```bash
+cd src
+zip -r ../game.tiny data/
+```
+
+### Web
+
+For web builds, the cart is fetched by JavaScript and unpacked into virtual memory. Place next to `tiny2d.html`:
+
+```
+build-web/
+├── tiny2d.html
+├── tiny2d.js
+├── tiny2d.wasm
+├── tiny2d.json     ← { "cart": "game.tiny" }
+└── game.tiny       ← the same cart
+```
+
+`tiny2d.json`:
+
+```json
+{
+  "cart": "game.tiny"
+}
+```
+
+---
+
 ## Running
 
-`tiny2d` expects a `data/` folder **next to it**. If `data/` is missing, the engine has nothing to run.
-
 **Ctrl+R** — reloads the game (Lua, sprites, font, sounds) without restarting the executable.
+
+**F11** — toggle fullscreen.
 
 ---
 
@@ -287,6 +357,48 @@ tiny2d.music(n, volume)   -- play with volume
 tiny2d.music()            -- stop current music
 ```
 
+### Tone synthesis
+
+Procedural sound generation — like WASM-4. Useful for small carts,
+no WAV files needed.
+
+```lua
+tiny2d.tone(frequency, duration, volume, flags)
+```
+
+- `frequency` — Hz (e.g. 440, 880)
+- `duration` — in frames (60 frames = 1 second)
+- `volume` — 0 to 100
+- `flags` — channel / waveform (0–3)
+
+4 channels, one sound per channel. A new tone on the same channel
+replaces the previous one.
+
+| flags | Channel | Waveform |
+|-------|---------|----------|
+| 0 | 0 | pulse 12.5% |
+| 1 | 1 | pulse 25% |
+| 2 | 2 | triangle |
+| 3 | 3 | noise |
+
+Examples:
+
+```lua
+-- Jump — pulse 12.5%
+tiny2d.tone(660, 6, 80, 0)
+
+-- Shoot — pulse 25%
+tiny2d.tone(880, 4, 70, 1)
+
+-- Bassy note — triangle
+tiny2d.tone(220, 30, 40, 2)
+
+-- Explosion — noise
+tiny2d.tone(0, 15, 90, 3)
+
+-- All 4 can play at the same time
+```
+
 ### Save
 
 ```lua
@@ -305,25 +417,22 @@ TINY2D comes with two optional Lua modules:
 
 ### `camera.lua` — scrolling camera
 
-Wraps `tiny2d.spr`, `tiny2d.rect`, `tiny2d.line`, `tiny2d.print`, and primitives to apply a camera offset.
+Adds `tiny2d.camera(x, y)` to the API. When called, all subsequent
+drawing functions are offset by `(-x, -y)`. Call `tiny2d.camera()`
+to reset.
 
 ```lua
 require("camera")
 
 function tiny2d.draw()
     tiny2d.cls(3)
-    camera(player.x - 76, player.y - 76)
+    tiny2d.camera(player.x - 76, player.y - 76)
     tiny2d.spr(0, player.x, player.y)
-    camera(0, 0)   -- reset for HUD
+    tiny2d.camera()   -- reset for HUD
     tiny2d.print("HP", 1, 1, 0)
 end
 ```
 
-### `map.lua` — tilemap drawing
-
-Draws a flat tilemap loaded from Tiled.
-
-```lua
 ### `map.lua` — tilemap drawing
 
 Adds `tiny2d.map()`, `tiny2d.mget()`, `tiny2d.mset()` to the API.
