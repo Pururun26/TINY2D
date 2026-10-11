@@ -16,3 +16,14 @@ void music_pause(void);
 void music_resume(void);
 void music_volume(float v);
 void music_update(void);
+
+// Tone synthesis (WASM-4 style, 4 channels)
+//   frequency: Hz
+//   duration:  in frames (60 per second)
+//   volume:    0-100
+//   flags:     channel + waveform (low 2 bits)
+//              0 = pulse 12.5%
+//              1 = pulse 25%
+//              2 = triangle
+//              3 = noise
+void tone(int frequency, int duration, int volume, int flags);

@@ -210,6 +210,16 @@ static int l_music(lua_State *L) {
     return 0;
 }
 
+// Тона
+static int l_tone(lua_State *L) {
+    int freq     = (int)luaL_checkinteger(L, 1);
+    int duration = (int)luaL_checkinteger(L, 2);
+    int volume   = (int)luaL_checkinteger(L, 3);
+    int flags    = (int)luaL_optinteger(L, 4, 0);
+    tone(freq, duration, volume, flags);
+    return 0;
+}
+
 // Сохранения
 static int l_save(lua_State *L) {
     int pos = (int)luaL_checkinteger(L, 1);
@@ -234,10 +244,6 @@ static int l_time(lua_State *L) {
     lua_pushnumber(L, tiny2d_time());
     return 1;
 }
-
-// ============================================================
-// Регистрация всех биндингов
-// ============================================================
 
 // ============================================================
 // Регистрация всех биндингов в таблицу tiny2d
@@ -282,6 +288,7 @@ void tiny2d_register_api(lua_State *Lstate) {
     // звук
     reg(Lstate, "sfx",    l_sfx);
     reg(Lstate, "music",  l_music);
+    reg(Lstate, "tone",   l_tone);
 
     // сохранения
     reg(Lstate, "save",   l_save);
