@@ -19,36 +19,34 @@ static int   current_music = -1;
 // Инициализация
 // ============================================================
 
-void tiny2d_audio_init(void) {
+void tiny2d_audio_init(const char *data_dir) {
     InitAudioDevice();
     if (!IsAudioDeviceReady()) {
         TraceLog(LOG_ERROR, "TINY2D: Audio device failed to initialize!");
         return;
     }
 
-    // SFX: 0.wav, 1.wav, 2.wav, ... до первой неудачи
+    // SFX: 0.wav, 1.wav, 2.wav, ...
     for (int i = 0; i < TINY2D_MAX_SFX; i++) {
         char path[1024];
         snprintf(path, sizeof(path), "%s%s%d.wav",
-                 GetApplicationDirectory(), TINY2D_SOUNDS_PATH, i);
-        
-        // Проверяем перед загрузкой
+                 data_dir, TINY2D_SOUNDS_PATH, i);
+
         if (!FileExists(path)) continue;
 
         Sound s = LoadSound(path);
-        if (s.frameCount == 0) continue;   // нет файла — пропускаем
+        if (s.frameCount == 0) continue;
 
         sfx_slots[i] = s;
         sfx_used[i]  = true;
     }
 
-    // Music: 0.ogg, 1.ogg, ... до первой неудачи
+    // Music: 0.ogg, 1.ogg, ...
     for (int i = 0; i < TINY2D_MAX_MUSIC; i++) {
         char path[1024];
         snprintf(path, sizeof(path), "%s%s%d.ogg",
-                 GetApplicationDirectory(), TINY2D_MUSIC_PATH, i);
-        
-        // Проверяем перед загрузкой
+                 data_dir, TINY2D_MUSIC_PATH, i);
+
         if (!FileExists(path)) continue;
 
         Music m = LoadMusicStream(path);

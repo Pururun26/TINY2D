@@ -1,7 +1,7 @@
 #pragma once
 #include <stdbool.h>
 
-void tiny2d_audio_init(void);      // грузит все N.wav / N.ogg
+void tiny2d_audio_init(const char *data_dir);      // грузит все N.wav / N.ogg
 void tiny2d_audio_close(void);
 
 // SFX

@@ -57,7 +57,7 @@
             noInitialRun: true,
             canvas: (function() { return document.getElementById('canvas'); })(),
             onRuntimeInitialized: async function() {
-                await loadDataZip();
+                await loadCart();
                 document.getElementById('status').classList.add('hidden');
                 Module.callMain();
             }
@@ -69,20 +69,37 @@
             if (isError) el.classList.add('error');
         }
 
-        async function loadDataZip() {
-            try {
-                setStatus('Fetching data.zip...');
-                const resp = await fetch('data.zip');
-                if (!resp.ok) {
-                    setStatus('data.zip not found. Place data.zip next to tiny2d.html.', true);
-                    return;
-                }
+        async function fetchCart() {
+            // 1. Read manifest
+            setStatus('Fetching tiny2d.json...');
+            const cfgResp = await fetch('tiny2d.json');
+            if (!cfgResp.ok) {
+                setStatus('tiny2d.json not found. Place it next to tiny2d.html.', true);
+                return null;
+            }
 
-                const buf = await resp.arrayBuffer();
+            const cfg = await cfgResp.json();
+            const cartName = cfg.cart || 'game.tiny';
+
+            // 2. Fetch cart
+            setStatus('Fetching ' + cartName + '...');
+            const cartResp = await fetch(cartName);
+            if (!cartResp.ok) {
+                setStatus(cartName + ' not found.', true);
+                return null;
+            }
+
+            return await cartResp.arrayBuffer();
+        }
+
+        async function loadCart() {
+            try {
+                const buf = await fetchCart();
+                if (!buf) return;
+
                 setStatus('Unpacking...');
 
                 const zip = await JSZip.loadAsync(buf);
-
                 const entries = Object.entries(zip.files);
                 let loaded = 0;
 
@@ -91,9 +108,9 @@
 
                     const content = await file.async('uint8array');
 
-                    // Поддержка обоих вариантов zip:
-                    // 1. data/scripts/main.lua  (зазипована папка data)
-                    // 2. scripts/main.lua       (зазиповано содержимое data)
+                    // Support both layouts:
+                    //   data/scripts/main.lua  (zipped folder data/)
+                    //   scripts/main.lua       (zipped contents of data/)
                     const cleanPath = path.startsWith('data/')
                         ? path.substring(5)
                         : path;
@@ -104,7 +121,7 @@
                     try {
                         FS.mkdirTree(dir);
                     } catch (e) {
-                        // папка уже есть — ок
+                        // folder already exists — ok
                     }
 
                     FS.writeFile(fullPath, content);
@@ -114,8 +131,8 @@
 
                 console.log('[tiny2d] extracted', loaded, 'files');
             } catch (e) {
-                console.error('[tiny2d] zip error:', e);
-                setStatus('Failed to load data.zip: ' + e.message, true);
+                console.error('[tiny2d] cart error:', e);
+                setStatus('Failed to load cart: ' + e.message, true);
             }
         }
     </script>

@@ -5,12 +5,19 @@
 #include "tiny2d_sprites.h"
 #include "tiny2d_audio.h"
 #include "tiny2d_save.h"
+
+#ifndef __EMSCRIPTEN__
+#include "tiny2d_cart.h"
+#endif
+
 #include "raylib.h"
 #include <stdio.h>
 #include <string.h>
 
 static RenderTexture2D target;
 static lua_State *L = NULL;
+
+char g_data_dir[1024] = {0};
 
 // ============================================================
 // Вызов Lua-функций из C
@@ -82,7 +89,7 @@ static void reload_game(const char *game_path) {
     {
         char path[1024];
         snprintf(path, sizeof(path),
-                 "%s%s", GetApplicationDirectory(), TINY2D_SPRITESHEET_PATH);
+                 "%s%s", g_data_dir, TINY2D_SPRITESHEET_PATH);
         tiny2d_load_spritesheet(path);
     }
 
@@ -90,13 +97,13 @@ static void reload_game(const char *game_path) {
     {
         char path[1024];
         snprintf(path, sizeof(path),
-                 "%s%s", GetApplicationDirectory(), TINY2D_FONT_PATH);
+                 "%s%s", g_data_dir, TINY2D_FONT_PATH);
         tiny2d_load_font(path);
     }
 
     // 4. Перезагрузить звуки и музыку
     tiny2d_audio_close();
-    tiny2d_audio_init();
+    tiny2d_audio_init(g_data_dir);
 
     tiny2d_time_reset();
 
@@ -136,16 +143,82 @@ int main(int argc, char **argv) {
     // ============================================================
     tiny2d_log_init();
 
+    const char *exe_dir = GetApplicationDirectory();
+
+    char game_path[1024]     = {0};
+    char cart_out[1024]      = {0};
+    char cart_path[1024]     = {0};
+
     // ============================================================
-    // 2. Путь к main.lua
+    // 2. Определяем источник игры
+    //    1) аргумент:   tiny2d.exe shmup.tiny
+    //    2) game.tiny   рядом с exe
+    //    3) data/       рядом с exe (режим разработки)
     // ============================================================
-    char game_path[1024];
+
     if (argc >= 2) {
-        snprintf(game_path, sizeof(game_path), "%s", argv[1]);
+        snprintf(cart_path, sizeof(cart_path), "%s", argv[1]);
+        tiny2d_log("TINY2D: cart from argument: %s", cart_path);
     } else {
-        snprintf(game_path, sizeof(game_path),
-                 "%s%s", GetApplicationDirectory(), TINY2D_MAIN_SCRIPT);
+        char candidate[1024];
+        snprintf(candidate, sizeof(candidate), "%sgame.tiny", exe_dir);
+        if (FileExists(candidate)) {
+            snprintf(cart_path, sizeof(cart_path), "%s", candidate);
+            tiny2d_log("TINY2D: found game.tiny");
+        }
     }
+
+        // ============================================================
+    // 2. Определяем источник игры
+    //    Desktop:  1) аргумент .tiny  2) game.tiny  3) data/
+    //    Web:      JS уже распаковал в /data/, идём сразу в dev
+    // ============================================================
+
+#ifndef __EMSCRIPTEN__
+    if (argc >= 2) {
+        snprintf(cart_path, sizeof(cart_path), "%s", argv[1]);
+        tiny2d_log("TINY2D: cart from argument: %s", cart_path);
+    } else {
+        char candidate[1024];
+        snprintf(candidate, sizeof(candidate), "%sgame.tiny", exe_dir);
+        if (FileExists(candidate)) {
+            snprintf(cart_path, sizeof(cart_path), "%s", candidate);
+            tiny2d_log("TINY2D: found game.tiny");
+        }
+    }
+
+    if (cart_path[0]) {
+        // ─── Картридж найден — распаковываем в _cart/ ───
+        snprintf(cart_out, sizeof(cart_out), "%s_cart", exe_dir);
+
+        if (!tiny2d_cart_extract(cart_path, cart_out)) {
+            tiny2d_log("TINY2D: failed to extract '%s'", cart_path);
+            tiny2d_log_close();
+            return 1;
+        }
+
+        snprintf(game_path, sizeof(game_path),
+                 "%s/data/scripts/main.lua", cart_out);
+        snprintf(g_data_dir, sizeof(g_data_dir), "%s/", cart_out);
+    } else
+#endif
+    {
+        // ─── Режим разработки — data/ рядом с exe ───
+        char data_dir[1024];
+        snprintf(data_dir, sizeof(data_dir), "%sdata", exe_dir);
+
+        if (!DirectoryExists(data_dir)) {
+            tiny2d_log("TINY2D: no game.tiny and no data/ found.");
+            tiny2d_log_close();
+            return 1;
+        }
+
+        snprintf(game_path, sizeof(game_path),
+                 "%s%s", exe_dir, TINY2D_MAIN_SCRIPT);
+        snprintf(g_data_dir, sizeof(g_data_dir), "%s", exe_dir);
+        tiny2d_log("TINY2D: using data/ directly (dev mode)");
+    }
+
     tiny2d_log("game path: %s", game_path);
 
     // ============================================================
@@ -155,7 +228,7 @@ int main(int argc, char **argv) {
 
     // Скрываем системный курсор
     HideCursor();
-    
+
     SetTargetFPS(TINY2D_FPS);
 
     target = LoadRenderTexture(TINY2D_WIDTH, TINY2D_HEIGHT);
@@ -237,6 +310,14 @@ int main(int argc, char **argv) {
     tiny2d_save_all();
     tiny2d_audio_close();
     UnloadRenderTexture(target);
+    
+#ifndef __EMSCRIPTEN__
+    // Удаляем распакованный картридж
+    if (cart_out[0]) {
+        tiny2d_cart_remove(cart_out);
+    }
+#endif
+
     CloseWindow();
 
     if (L) lua_close(L);

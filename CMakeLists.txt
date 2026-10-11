@@ -86,11 +86,25 @@ set(SOURCES
     src/tiny2d_save.c
 )
 
+if(NOT EMSCRIPTEN)
+    list(APPEND SOURCES
+        src/tiny2d_cart.c
+        miniz/miniz.c
+    )
+endif()
+
 add_executable(tiny2d ${SOURCES})
 
 target_include_directories(tiny2d PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
+    "${RAYLIB_INCLUDE_DIR}"
 )
+
+if(NOT EMSCRIPTEN)
+    target_include_directories(tiny2d PRIVATE
+        "${CMAKE_SOURCE_DIR}/miniz"
+    )
+endif()
 
 # ============================================================
 # Emscripten (web) — сборка через emcmake
@@ -124,6 +138,13 @@ if(EMSCRIPTEN)
         OUTPUT_NAME "tiny2d"
         WIN32_EXECUTABLE FALSE
     )
+
+    # ─── Генерация tiny2d.json, если его нет ───
+    if(NOT EXISTS "${CMAKE_BINARY_DIR}/tiny2d.json")
+        file(WRITE "${CMAKE_BINARY_DIR}/tiny2d.json"
+             "{\n  \"cart\": \"game.tiny\"\n}\n")
+        message(STATUS "Created default tiny2d.json")
+    endif()
 
 # ============================================================
 # Windows / Linux / macOS — обычная сборка
