@@ -20,9 +20,36 @@ static bool   shader_ready   = false;
 static bool   palette_dirty  = true;      // нужно ли обновить uniform палитры
 
 // ============================================================
-// Исходник шейдера (GLSL 330)
+// Исходник шейдера
+//   Web (WebGL1/GLSL ES 1.00) требует precision.
+//   Desktop (GLSL 330) — не требует, и с ним ломается.
+//   Raylib сам подставит #version.
 // ============================================================
 
+#ifdef __EMSCRIPTEN__
+static const char *PALETTE_FS =
+    "precision mediump float;\n"
+    "varying vec2 fragTexCoord;\n"
+    "varying vec4 fragColor;\n"
+    "uniform sampler2D texture0;\n"
+    "uniform vec4 colDiffuse;\n"
+    "uniform vec4 pal0;\n"
+    "uniform vec4 pal1;\n"
+    "uniform vec4 pal2;\n"
+    "uniform vec4 pal3;\n"
+    "void main()\n"
+    "{\n"
+    "    vec4 texel = texture2D(texture0, fragTexCoord);\n"
+    "    if (texel.a < 0.5) discard;\n"
+    "    float idx = texel.r * 255.0;\n"
+    "    vec4 col;\n"
+    "    if (idx < 0.5) col = pal0;\n"
+    "    else if (idx < 1.5) col = pal1;\n"
+    "    else if (idx < 2.5) col = pal2;\n"
+    "    else col = pal3;\n"
+    "    gl_FragColor = col * colDiffuse;\n"
+    "}\n";
+#else
 static const char *PALETTE_FS =
     "varying vec2 fragTexCoord;\n"
     "varying vec4 fragColor;\n"
@@ -44,6 +71,7 @@ static const char *PALETTE_FS =
     "    else col = pal3;\n"
     "    gl_FragColor = col * colDiffuse;\n"
     "}\n";
+#endif
 
 // ============================================================
 // Конвертация цвета в индекс палитры
