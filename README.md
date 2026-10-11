@@ -324,27 +324,33 @@ end
 Draws a flat tilemap loaded from Tiled.
 
 ```lua
+### `map.lua` — tilemap drawing
+
+Adds `tiny2d.map()`, `tiny2d.mget()`, `tiny2d.mset()` to the API.
+Draws a flat tilemap loaded from Tiled.
+
+```lua
 require("map")
 
 function tiny2d.init()
-    MAP_DATA = { 2, 2, 0, 0, 2, 2, ... }
-    MAP_W = 128
-    MAP_H = 128
+    tiny2d.map_data = { 2, 2, 0, 0, 2, 2, ... }
+    tiny2d.map_w = 128
+    tiny2d.map_h = 128
 end
 
 function tiny2d.draw()
-    map(0, 0, 0, 0, 20, 20)
+    tiny2d.map(0, 0, 0, 0, 20, 20)
 end
 ```
 
-Globals:
-- `MAP_DATA` — flat array from Tiled (1-based GIDs, 0 = empty)
-- `MAP_W`, `MAP_H` — map dimensions in tiles (defaults 128×128)
+Fields:
+- `tiny2d.map_data` — flat array from Tiled (1-based GIDs, 0 = empty)
+- `tiny2d.map_w`, `tiny2d.map_h` — map dimensions in tiles (defaults 128×128)
 
 Functions:
-- `map(celx, cely, sx, sy, celw, celh)` — draw a region
-- `mget(x, y)` — read tile (0-based sprite id, 0 = empty)
-- `mset(x, y, id)` — write tile
+- `tiny2d.map(celx, cely, sx, sy, celw, celh)` — draw a region
+- `tiny2d.mget(x, y)` — read tile (0-based sprite id, 0 = empty)
+- `tiny2d.mset(x, y, id)` — write tile
 
 Convention: **sprite 0 is reserved** — don't use it in maps.
 
