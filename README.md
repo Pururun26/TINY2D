@@ -83,8 +83,6 @@ Open `http://localhost:8000/tiny2d.html`.
 
 `tiny2d` expects a `data/` folder **next to it**. If `data/` is missing, the engine has nothing to run.
 
-To start, download the release `.zip` (which includes `data/`) or create your own `data/` folder — see the structure below.
-
 **Ctrl+R** — reloads the game (Lua, sprites, font, sounds) without restarting the executable.
 
 ---
@@ -100,11 +98,11 @@ data/
 │   ├── font.png          ← 128×128 font sheet (3×5 glyphs)
 │   └── spritesheet.png   ← 256×256 sprites (8×8 each, 32×32 grid = 1024 sprites)
 ├── sounds/
-│   ├── 0.wav             ← sfx(0)
-│   ├── 1.wav             ← sfx(1)
+│   ├── 0.wav             ← tiny2d.sfx(0)
+│   ├── 1.wav             ← tiny2d.sfx(1)
 │   └── ...               ← up to 63.wav (64 sounds total)
 └── music/
-    ├── 0.ogg             ← music(0)
+    ├── 0.ogg             ← tiny2d.music(0)
     └── ...               ← up to 7.ogg (8 tracks total)
 ```
 
@@ -133,8 +131,8 @@ local player = require("player")
 SFX files named `0.wav`, `1.wav`, ... `63.wav`. Loaded automatically at startup.
 
 ```lua
-sfx(0)         -- play sound 0.wav at full volume
-sfx(0, 0.5)    -- play at 50% volume
+tiny2d.sfx(0)         -- play sound 0.wav at full volume
+tiny2d.sfx(0, 0.5)    -- play at 50% volume
 ```
 
 ### `data/music/`
@@ -142,25 +140,27 @@ sfx(0, 0.5)    -- play at 50% volume
 Music files named `0.ogg`, `1.ogg`, ... `7.ogg`. Loaded automatically.
 
 ```lua
-music(0)         -- play 0.ogg in loop
-music(0, 0.3)    -- play at 30% volume
-music()          -- stop
+tiny2d.music(0)         -- play 0.ogg in loop
+tiny2d.music(0, 0.3)    -- play at 30% volume
+tiny2d.music()          -- stop
 ```
 
 ---
 
 ## Lua API
 
+**All API functions live in the `tiny2d` table.**
+
 ### Game callbacks
 
 ```lua
-function init()     -- called once at startup (and after Ctrl+R reload)
+function tiny2d.init()     -- called once at startup (and after Ctrl+R reload)
 end
 
-function update()   -- logic, called 60 times per second
+function tiny2d.update()   -- logic, called 60 times per second
 end
 
-function draw()     -- rendering, called 60 times per second
+function tiny2d.draw()     -- rendering, called 60 times per second
 end
 ```
 
@@ -169,47 +169,47 @@ All three are optional.
 ### Graphics
 
 ```lua
-cls(color)                          -- clear screen
-print(text, x, y, color)            -- draw text
-fps(x, y, color)                    -- draw FPS counter
+tiny2d.cls(color)                          -- clear screen
+tiny2d.print(text, x, y, color)            -- draw text
+tiny2d.fps(x, y, color)                    -- draw FPS counter
 ```
 
 ### Primitives
 
 ```lua
-circ(x, y, r, color)                -- filled circle
-circb(x, y, r, color)               -- circle border
-elli(x, y, a, b, color)             -- filled ellipse (a = horizontal radius, b = vertical radius)
-ellib(x, y, a, b, color)            -- ellipse border
-rect(x, y, w, h, color)             -- filled rectangle
-rectb(x, y, w, h, color)            -- rectangle border
-line(x0, y0, x1, y1, color)         -- line
+tiny2d.circ(x, y, r, color)                -- filled circle
+tiny2d.circb(x, y, r, color)               -- circle border
+tiny2d.elli(x, y, a, b, color)             -- filled ellipse
+tiny2d.ellib(x, y, a, b, color)            -- ellipse border
+tiny2d.rect(x, y, w, h, color)             -- filled rectangle
+tiny2d.rectb(x, y, w, h, color)            -- rectangle border
+tiny2d.line(x0, y0, x1, y1, color)         -- line
 ```
 
 ### Sprites
 
 ```lua
-spr(n, x, y)                        -- draw 8×8 sprite n at (x, y)
-spr(n, x, y, cols, rows)            -- draw a block of cols×rows sprites starting at n
-spr(n, x, y, cols, rows, flip_x, flip_y)
+tiny2d.spr(n, x, y)                        -- draw 8×8 sprite n at (x, y)
+tiny2d.spr(n, x, y, cols, rows)            -- draw a block of cols×rows sprites
+tiny2d.spr(n, x, y, cols, rows, flip_x, flip_y)
 ```
 
 `cols` and `rows` — how many 8×8 sprites wide and tall to draw. Default 1×1.
 
-Example: `spr(0, 10, 10, 2, 3)` draws a 16×24 block (2 sprites wide, 3 tall) starting from sprite 0.
+Example: `tiny2d.spr(0, 10, 10, 2, 3)` draws a 16×24 block (2 sprites wide, 3 tall) starting from sprite 0.
 
 ### Palette
 
 ```lua
-pal()                -- reset to default
-pal(m0, m1, m2, m3)  -- remap indices: new[i] = old[m[i]]
+tiny2d.pal()                -- reset to default
+tiny2d.pal(m0, m1, m2, m3)  -- remap indices: new[i] = old[m[i]]
 ```
 
 ### Input — keyboard
 
 ```lua
-btn(id)    -- is button held
-btnp(id)   -- was button just pressed this frame
+tiny2d.btn(id)    -- is button held
+tiny2d.btnp(id)   -- was button just pressed this frame
 ```
 
 Button IDs:
@@ -228,8 +228,8 @@ Keyboard mapping: arrows / WASD for direction, Z / J for `O`, X / K for `X`.
 ### Input — mouse
 
 ```lua
-local m = mouse()   -- current state (buttons held)
-local m = mousep()  -- state at this frame (buttons just pressed)
+local m = tiny2d.mouse()   -- current state (buttons held)
+local m = tiny2d.mousep()  -- state at this frame (buttons just pressed)
 ```
 
 Both return a table:
@@ -247,55 +247,106 @@ Both return a table:
 Example:
 
 ```lua
-function draw()
-    cls(0)
-    local m = mouse()
-    circ(m.x, m.y, 2, 3)
-    if m.left then rectb(m.x - 4, m.y - 4, 8, 8, 1) end
+function tiny2d.draw()
+    tiny2d.cls(0)
+    local m = tiny2d.mouse()
+    tiny2d.circ(m.x, m.y, 2, 3)
+    if m.left then tiny2d.rectb(m.x - 4, m.y - 4, 8, 8, 1) end
 end
 ```
 
 ### Time
 
 ```lua
-utime()    -- Unix timestamp in seconds (integer)
-time()     -- milliseconds elapsed since game start (float)
+tiny2d.utime()    -- Unix timestamp in seconds (integer)
+tiny2d.time()     -- milliseconds elapsed since game start (float)
 ```
 
-- `utime()` — for idle games, persistent progress, saving timestamps.
-- `time()` — for animations, timers, blinking.
+- `tiny2d.utime()` — for idle games, persistent progress, saving timestamps.
+- `tiny2d.time()` — for animations, timers, blinking.
 
 ```lua
 -- animation
-local t = time() / 1000
-circ(80 + math.sin(t * 2) * 30, 80, 5, 3)
+local elapsed = tiny2d.time() / 1000
+tiny2d.circ(80 + math.sin(elapsed * 2) * 30, 80, 5, 3)
 
 -- idle
-local last = load(0)
-local now = utime()
+local last = tiny2d.load(0)
+local now = tiny2d.utime()
 coins = coins + (now - last) * 0.1
-save(0, now)
+tiny2d.save(0, now)
 ```
 
 ### Sound
 
 ```lua
-sfx(n)             -- play sound n
-sfx(n, volume)     -- play with volume 0.0–1.0
-music(n)           -- play music n in loop
-music(n, volume)   -- play with volume
-music()            -- stop current music
+tiny2d.sfx(n)             -- play sound n
+tiny2d.sfx(n, volume)     -- play with volume 0.0–1.0
+tiny2d.music(n)           -- play music n in loop
+tiny2d.music(n, volume)   -- play with volume
+tiny2d.music()            -- stop current music
 ```
 
 ### Save
 
 ```lua
-save(pos, value)   -- write value (int64) to slot pos (0–63)
-load(pos)          -- read value from slot pos
+tiny2d.save(pos, value)   -- write value (int64) to slot pos (0–63)
+tiny2d.load(pos)          -- read value from slot pos
 ```
 
 - On desktop: auto-saved to `save/storage.bin` on window close and every 10 minutes.
-- On web: saved to browser `localStorage` immediately on every `save()`.
+- On web: saved to browser `localStorage` immediately on every `tiny2d.save()`.
+
+---
+
+## Lua modules
+
+TINY2D comes with two optional Lua modules:
+
+### `camera.lua` — scrolling camera
+
+Wraps `tiny2d.spr`, `tiny2d.rect`, `tiny2d.line`, `tiny2d.print`, and primitives to apply a camera offset.
+
+```lua
+require("camera")
+
+function tiny2d.draw()
+    tiny2d.cls(3)
+    camera(player.x - 76, player.y - 76)
+    tiny2d.spr(0, player.x, player.y)
+    camera(0, 0)   -- reset for HUD
+    tiny2d.print("HP", 1, 1, 0)
+end
+```
+
+### `map.lua` — tilemap drawing
+
+Draws a flat tilemap loaded from Tiled.
+
+```lua
+require("map")
+
+function tiny2d.init()
+    MAP_DATA = { 2, 2, 0, 0, 2, 2, ... }
+    MAP_W = 128
+    MAP_H = 128
+end
+
+function tiny2d.draw()
+    map(0, 0, 0, 0, 20, 20)
+end
+```
+
+Globals:
+- `MAP_DATA` — flat array from Tiled (1-based GIDs, 0 = empty)
+- `MAP_W`, `MAP_H` — map dimensions in tiles (defaults 128×128)
+
+Functions:
+- `map(celx, cely, sx, sy, celw, celh)` — draw a region
+- `mget(x, y)` — read tile (0-based sprite id, 0 = empty)
+- `mset(x, y, id)` — write tile
+
+Convention: **sprite 0 is reserved** — don't use it in maps.
 
 ---
 
@@ -306,26 +357,51 @@ load(pos)          -- read value from slot pos
 ```lua
 local x, y
 
-function init()
+function tiny2d.init()
     x = 80
     y = 80
 end
 
-function update()
-    if btn(0) then x = x - 1 end
-    if btn(1) then x = x + 1 end
-    if btn(2) then y = y - 1 end
-    if btn(3) then y = y + 1 end
+function tiny2d.update()
+    if tiny2d.btn(0) then x = x - 1 end
+    if tiny2d.btn(1) then x = x + 1 end
+    if tiny2d.btn(2) then y = y - 1 end
+    if tiny2d.btn(3) then y = y + 1 end
 
-    if btnp(4) then sfx(0) end
+    if tiny2d.btnp(4) then tiny2d.sfx(0) end
 end
 
-function draw()
-    cls(0)
-    spr(0, x - 4, y - 4)
-    print("HELLO", 4, 4, 3)
+function tiny2d.draw()
+    tiny2d.cls(0)
+    tiny2d.spr(0, x - 4, y - 4)
+    tiny2d.print("HELLO", 4, 4, 3)
 end
 ```
+
+---
+
+## Migration from 1.x
+
+**TINY2D 2.0.0 is not backwards compatible.**
+
+In 1.x, API functions were global (`spr`, `cls`, `btn`, ...).
+In 2.x, they live in the `tiny2d` table.
+
+```lua
+-- 1.x
+function update()
+    cls(0)
+    spr(0, 10, 10)
+end
+
+-- 2.x
+function tiny2d.update()
+    tiny2d.cls(0)
+    tiny2d.spr(0, 10, 10)
+end
+```
+
+Game callbacks (`init`, `update`, `draw`) must also be `tiny2d.init`, `tiny2d.update`, `tiny2d.draw`.
 
 ---
 

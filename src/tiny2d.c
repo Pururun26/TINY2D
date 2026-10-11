@@ -18,8 +18,21 @@ static lua_State *L = NULL;
 
 static void call_lua(const char *name) {
     if (!L) return;
-    lua_getglobal(L, name);
-    if (!lua_isfunction(L, -1)) { lua_pop(L, 1); return; }
+
+    lua_getglobal(L, "tiny2d");
+    if (!lua_istable(L, -1)) {
+        lua_pop(L, 1);
+        return;
+    }
+
+    lua_getfield(L, -1, name);
+    lua_remove(L, -2);   // убрать tiny2d со стека
+
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 1);
+        return;
+    }
+
     if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
         tiny2d_log("lua error in %s: %s", name, lua_tostring(L, -1));
         lua_pop(L, 1);

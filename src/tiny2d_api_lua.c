@@ -239,27 +239,53 @@ static int l_time(lua_State *L) {
 // Регистрация всех биндингов
 // ============================================================
 
+// ============================================================
+// Регистрация всех биндингов в таблицу tiny2d
+// ============================================================
+
+static void reg(lua_State *L, const char *name, lua_CFunction fn) {
+    lua_pushcfunction(L, fn);
+    lua_setfield(L, -2, name);
+}
+
 void tiny2d_register_api(lua_State *Lstate) {
-    lua_register(Lstate, "cls",   l_cls);
-    lua_register(Lstate, "print", l_print);
-    lua_register(Lstate, "fps",   l_fps);
-    lua_register(Lstate, "pal",   l_pal);
-    lua_register(Lstate, "circ",  l_circ);
-    lua_register(Lstate, "circb", l_circb);
-    lua_register(Lstate, "rect",  l_rect);
-    lua_register(Lstate, "rectb", l_rectb);
-    lua_register(Lstate, "elli",  l_elli);
-    lua_register(Lstate, "ellib", l_ellib);
-    lua_register(Lstate, "line",  l_line);
-    lua_register(Lstate, "btn",   l_btn);
-    lua_register(Lstate, "btnp",  l_btnp);
-    lua_register(Lstate, "mouse",  l_mouse);
-    lua_register(Lstate, "mousep", l_mousep);
-    lua_register(Lstate, "spr",   l_spr);
-    lua_register(Lstate, "sfx",   l_sfx);
-    lua_register(Lstate, "music", l_music);
-    lua_register(Lstate, "save",  l_save);
-    lua_register(Lstate, "load",  l_load);
-    lua_register(Lstate, "utime", l_utime);
-    lua_register(Lstate, "time", l_time);
+    lua_newtable(Lstate);   // стек: [tiny2d]
+
+    // графика
+    reg(Lstate, "cls",    l_cls);
+    reg(Lstate, "print",  l_print);
+    reg(Lstate, "fps",    l_fps);
+    reg(Lstate, "pal",    l_pal);
+
+    // примитивы
+    reg(Lstate, "circ",   l_circ);
+    reg(Lstate, "circb",  l_circb);
+    reg(Lstate, "rect",   l_rect);
+    reg(Lstate, "rectb",  l_rectb);
+    reg(Lstate, "elli",   l_elli);
+    reg(Lstate, "ellib",  l_ellib);
+    reg(Lstate, "line",   l_line);
+
+    // спрайты
+    reg(Lstate, "spr",    l_spr);
+
+    // ввод
+    reg(Lstate, "btn",    l_btn);
+    reg(Lstate, "btnp",   l_btnp);
+    reg(Lstate, "mouse",  l_mouse);
+    reg(Lstate, "mousep", l_mousep);
+
+    // время
+    reg(Lstate, "utime",  l_utime);
+    reg(Lstate, "time",   l_time);
+
+    // звук
+    reg(Lstate, "sfx",    l_sfx);
+    reg(Lstate, "music",  l_music);
+
+    // сохранения
+    reg(Lstate, "save",   l_save);
+    reg(Lstate, "load",   l_load);
+
+    lua_setglobal(Lstate, "tiny2d");
 }
